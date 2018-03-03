@@ -15,6 +15,12 @@ export default function(state=[],action){
         case "DELETE_USER":
             return [...state].filter((dt)=>dt._id!==action.user._id);
 
+        case "SORT_USER":
+            return action.users;
+
+        case "SEARCH_USER":
+            return action.users;
+
         default:
             return state;
     }

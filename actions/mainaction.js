@@ -1,8 +1,14 @@
-export const selectUser=(user)=>{
-    console.log('You clicked : ',user.firstName);
+export const sortUserAction=(users)=>{
     return{
-        type:'SELECT_USER',
-        payload:user
+        type:'SORT_USER',
+        users
+    }
+}
+
+export const searchUserAction=(users)=>{
+    return{
+        type:'SEARCH_USER',
+        users
     }
 }
 
@@ -54,7 +60,14 @@ export const pageAction=(p=1,l=2)=>{
     })
 }
 
+export const isEditAction=(flag=false)=>{
+    return ((dispatch) =>{
+        dispatch({type:'IS_EDITING',payload:flag});
+    })
+}
+
 export const fetchUser=()=>{
+
     return (dispatch=>{
         return fetch('http://localhost:3000/person')
             .then((res)=>{
@@ -100,11 +113,7 @@ export const addUser=(obj)=>{
     var data={
         method:'post',
         mode:'cors',
-        body:JSON.stringify(obj),
-        headers:{
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
+        body:obj
     }
     return (dispatch=>{
         fetch(url,data).then((response)=>{
@@ -124,11 +133,7 @@ export const editUser=(obj,id)=>{
     var data={
         method:'put',
         mode:'cors',
-        body:JSON.stringify(obj),
-        headers:{
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
+        body:obj
     }
     return (dispatch=>{
         fetch(url,data).then((response)=>{
@@ -169,4 +174,60 @@ export const setFields=(obj)=>{
         let user = getState().obj
         dispatch({type:'SET_FIELDS',payload:{...user,obj}})
     })
+}
+
+export const loginAction=(unm,pwd)=>{
+    return (dispatch)=> {
+        var url = 'http://localhost:3000/login';
+        var obj = {
+            username: unm,
+            password: pwd
+        }
+        var data = {
+            method: 'post',
+            body: JSON.stringify(obj),
+            mode: 'cors',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }
+        fetch(url, data).then((res) => {
+            return res.json();
+        }).then((response) => {
+            console.log("Login Respon",response);
+            if (response.message === 'success') {
+                console.log("in action dispatch",response);
+                dispatch({
+                    type: "LOGIN",
+                    payload: "success"
+                })
+            }
+            else {
+                dispatch({
+                    type: "LOGIN",
+                    payload: "fail"
+                })
+            }
+        }).catch(() => {
+            console.log('Error in logging in');
+        })
+    }
+}
+
+export const logoutAction=()=>{
+    return {
+           type: "LOGOUT",
+           payload: "out"
+    }
+}
+
+export const setLoginFields=(unm="",pwd="")=>{
+    return (dispatch,getState)=>{
+        let f=getState.loginFields;
+        dispatch({
+            type:"SET_LOGINFIELDS",
+            payload:{...f,unm,pwd}
+        })
+    }
 }

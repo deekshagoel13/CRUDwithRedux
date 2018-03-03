@@ -1,10 +1,8 @@
 import React from 'react'
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import {fetchCity,addUser,editUser,setFields} from '../actions/mainaction';
-let show=true;
+import {fetchCity,addUser,editUser,setFields,isEditAction} from '../actions/mainaction';
 class Form extends React.Component{
-
 
     // checkMail=()=>{
     //     if(!(/^\w+([\\.-]?\w+)*@\w+([\\.-]?\w+)*(\.\w{2,3})+$/.test(this.state.mail))) {
@@ -43,25 +41,27 @@ class Form extends React.Component{
             "lnm":'',
             "email":'',
             "state":'',
-            "city":''
+            "city":'',
+            "file":''
         };
+        this.props.isEditAction(false);
         this.props.setFields(obj1);
     }
 
     handleSubmit=(e)=>{
+        const formData=new FormData();
+        formData.append('file',this.props.obj.file);
+        formData.append('firstName',this.props.obj.fnm);
+        formData.append('lastName',this.props.obj.lnm);
+        formData.append('email',this.props.obj.email);
+        formData.append('state',this.props.obj.state);
+        formData.append('city',this.props.obj.city);
 
-        var obj={
-            "firstName":this.props.obj.fnm,
-            "lastName":this.props.obj.lnm,
-            "email":this.props.obj.email,
-            "state":this.props.obj.state,
-            "city":this.props.obj.city
+        if(e.target.innerHTML==="Add") {
+            this.props.addUser(formData);
         }
-        if(e.target.innerHTML==="Add")
-            this.props.addUser(obj);
         else {
-            console.log(this.props.obj.id);
-            this.props.editUser(obj, this.props.obj.id);
+            this.props.editUser(formData, this.props.obj.id);
             e.target.innerHTML='Add';
         }
         this.clearControls();
@@ -74,7 +74,8 @@ class Form extends React.Component{
             "lnm":this.props.obj.lnm,
             "email":this.props.obj.email,
             "state":this.props.obj.state,
-            "city":this.props.obj.city
+            "city":this.props.obj.city,
+            "file":this.props.obj.file
         }
         this.props.setFields(obj);
     }
@@ -86,7 +87,8 @@ class Form extends React.Component{
             "lnm":e.target.value,
             "email":this.props.obj.email,
             "state":this.props.obj.state,
-            "city":this.props.obj.city
+            "city":this.props.obj.city,
+            "file":this.props.obj.file
         }
         this.props.setFields(obj);
     }
@@ -98,7 +100,8 @@ class Form extends React.Component{
             "lnm":this.props.obj.lnm,
             "email":e.target.value,
             "state":this.props.obj.state,
-            "city":this.props.obj.city
+            "city":this.props.obj.city,
+            "file":this.props.obj.file
         }
         this.props.setFields(obj);
     }
@@ -111,7 +114,8 @@ class Form extends React.Component{
             "lnm":this.props.obj.lnm,
             "email":this.props.obj.email,
             "state":e.target.selectedOptions[0].innerHTML,
-            "city":''
+            "city":'',
+            "file":this.props.obj.file
         }
         this.props.setFields(obj);
     }
@@ -123,7 +127,21 @@ class Form extends React.Component{
             "lnm":this.props.obj.lnm,
             "email":this.props.obj.email,
             "state":this.props.obj.state,
-            "city":e.target.selectedOptions[0].innerHTML
+            "city":e.target.selectedOptions[0].innerHTML,
+            "file":this.props.obj.file
+        }
+        this.props.setFields(obj);
+    }
+
+    handlefileChange=(e)=>{
+        var obj={
+            "id":this.props.obj.id,
+            "fnm":this.props.obj.fnm,
+            "lnm":this.props.obj.lnm,
+            "email":this.props.obj.email,
+            "state":this.props.obj.state,
+            "city":this.props.obj.city,
+            "file":e.target.files[0]
         }
         this.props.setFields(obj);
     }
@@ -137,8 +155,8 @@ class Form extends React.Component{
                     <button className={'close'} data-dismiss={'modal'} onClick={this.clearControls}>&times;</button>
                 </div>
                 <div className="container modal-body">
-                    <label className={'text-danger'}></label>
-                    <form onLoad={this.clearControls}>
+                    {/*<label className={'text-danger'}></label>*/}
+                    <form encType={'multipart/form-data'}>
                         <div className="form-group">
                             <input className="form-control" onChange={this.handlefnmChange} type="text" placeholder="First Name" value={this.props.obj.fnm}/>
                         </div>
@@ -171,11 +189,11 @@ class Form extends React.Component{
                                 }
                             </select>
                         </div>
+                        <div className="form-group">
+                            <input className="form-control" onChange={this.handlefileChange} type="file" filename={'http://localhost:3000/uploads/circle.png'}/>
+                        </div>
                         <div className={'modal-footer'}>
-                            {(show)?
-                            <button data-dismiss="modal" className="btn btn-info" onClick={this.handleSubmit}>{'Add'}</button>
-                            :<button data-dismiss="modal" className="btn btn-info" onClick={this.handleSubmit}>{'Edit'}</button>
-                                }
+                            <button data-dismiss="modal" className="btn btn-info" onClick={this.handleSubmit}>{(!this.props.isEdit)?'Add':'Edit'}</button>
                             <button className="btn btn-info" data-dismiss="modal" onClick={this.clearControls}>Close</button>
                         </div>
                     </form>
@@ -189,7 +207,8 @@ function mapStateToProps(state){
     return{
         s:state.state,
         c:state.city,
-        obj:state.obj
+        obj:state.obj,
+        isEdit:state.isEdit
     };
 }
 
@@ -198,7 +217,8 @@ function matchDispatchToProps(dispatch) {
         fetchCity:fetchCity,
         addUser:addUser,
         setFields:setFields,
-        editUser:editUser
+        editUser:editUser,
+        isEditAction:isEditAction
     },dispatch)
 }
 export default connect(mapStateToProps,matchDispatchToProps)(Form);

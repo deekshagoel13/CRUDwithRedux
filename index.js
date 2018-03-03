@@ -21,7 +21,7 @@ const enhancer = composeEnhancers(
     // other store enhancers if any
 );
 const store = createStore(allReducer, enhancer);
-store.dispatch(fetchUserAction.fetchUser());
+//store.dispatch(fetchUserAction.fetchUser());
 store.dispatch(fetchUserAction.pageAction());
 store.dispatch(fetchUserAction.fetchState());
 
